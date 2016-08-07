@@ -4,8 +4,7 @@ import sqlite3
 
 ts = time.time()
 st = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
-name = ''
-position = int()
+
 
 # Temporary Database config and functions below
 conn = sqlite3.connect('database.db')
@@ -35,7 +34,7 @@ def Verify():
         1. Sign In
         2. Sign Out
         9. Administration \n"""))
-        
+
         if answer == 1:
             return Clock_In(int(input_id), int(input_position))
         elif answer == 2:
@@ -47,8 +46,9 @@ def Verify():
             return Verify()
     else:
         print('User not in database')
-        return False
+        return Verify()
 
+# Self explanatory
 def Create_User():
     input_id = input('>> ID: ')
     input_name = input('>> Name: ')
@@ -57,22 +57,25 @@ def Create_User():
     print('>> User %s has been created, with ID: %s' % (input_name, input_id))
     return Verify()
 
-
+# Makes the first timestamp in the database.
 def Clock_In(input_id, input_position):
     c.execute("SELECT %s FROM %s WHERE %s = ?" % ('signIn', 'users', 'id'), (input_id,))
     c.execute("SELECT %s FROM %s WHERE %s = ?" % ('name', 'users', 'id'), (input_id,))
-    data = data_in = str(c.fetchall()).strip("[]()'',,")
+    data = str(c.fetchall()).strip("[]()'',,")
     c.execute("UPDATE %s SET %s = ?, %s = ? WHERE %s = ?" % ('users', 'signIn', 'position', 'id'), (time_in, input_position, input_id))
     conn.commit()
     print('%s ID: %s signed in at %s' % (data, input_id, time_in))
     return Verify()
 
+# Makes the second and final timestamp.
 def Clock_Out(input_id):
     c.execute("SELECT %s FROM %s WHERE %s = ?" % ('signIn', 'users', 'id'), (input_id,))
     data_in = str(c.fetchall()).strip("[]()'',,")
     c.execute("UPDATE %s SET %s = ? WHERE %s = ?" % ('users', 'signOut', 'id'), (time_out, input_id))
+    c.execute("SELECT %s FROM %s WHERE %s = ?" % ('name', 'users', 'id'), (input_id,))
+    data = str(c.fetchall()).strip("[]()'',,")
     conn.commit()
-    print('%s signed in at %s and signed out at %s' % (input_id, data_in, time_out))
+    print('%s ID: %s signed in at %s and signed out at %s' % (data, input_id, data_in, time_out))
     return Verify()
 
 
